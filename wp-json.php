@@ -25,8 +25,8 @@
         'WP-JSON',
         'manage_option',
         'wp-json-reader',
-        'get_json_data'
-        'dashicons-book'
+        'get_json_data',
+        'dashicons-book',
         16,
        
     );
