@@ -29,32 +29,31 @@
     );
  }
 
-function run_all_the_code_functions() {
+
+   function run_all_the_code_functions() {
+    
+      if ( false === get_option( 'wp_json_info' ) ) {
   
-   if ( get_option('wp_json_info') ) {
+          // Get all the api books.
+          $info_nasa = get_json_data();
+          
+          // Save API call as a Transient.
+          add_option( 'wp_json_info', $info_nasa );
+  
+          return;
+      }
+  
+    // Custom Tables
+    if ( false === get_option( 'wp_json_table_version' ) ) {
+    //  create_database_table();
+  }
 
-      $results = json_decode( get_option( 'wp_json_info') )->results;
-
-      echo '<pre>';
-      var_dump(  $results);
-      echo '</pre>';
-
-      return;
-   }
-   print_r( 'The option is missing' );
-   // Get all information
-   $info_nasa = get_json_data();
-
-   add_option( 'wp_json_info', $info_nasa );
- 
-   print_r( 'The option is saved' );
- 
-   // Get the information stored in the database
-   // Transient
+  // Get the info stored in the database.
+ // save_database_table_info();
 
 }
 
-   
+
 
  function get_json_data(){
 
@@ -86,6 +85,64 @@ function run_all_the_code_functions() {
       return $body;
    }   
    }
+   //This is what's new
+
+   function create_database_table() {
+    
+      global $wp_json_table_version;
+      global $wpdb;
+  
+      $wp_json_table_version = '1.0.0';
+  
+      $table_name = $wpdb->prefix . 'wp_json_table_version';
+  
+      $charset_collate = $wpdb->get_charset_collate();
+  
+     $sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        title text(39),
+        bookDescription text(116),
+        contributor text(20),
+        author text(20),
+        price int(20),
+        publisher text(20),
+        PRIMARY KEY  (id)
+     ) $charset_collate;";
+  
+     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+     dbDelta( $sql );
+  
+      // Save API call as a Transient.
+      add_option( 'wp_json_table_version', $wp_json_table_version );
+  }
+  
+  
+  function save_database_table_info() {
+  
+      global $wpdb;
+     
+     $table_name = $wpdb->prefix . 'wp_json_table_version';
+      
+      $results = json_decode( get_option( 'wp_json_info_nasa' ) )->results;
+  
+      foreach( $results as $result ) {
+  
+          $wpdb->insert( 
+              $table_name, 
+              array( 
+                  'time'            => current_time( 'mysql' ), 
+                  'title'           => $result->title,
+                  'bookDescription' => $result->description,
+                  'contributor'     => $result->contributor,
+                  'author'          => $result->author,
+                  'price'           => $result->price,
+                  'publisher'       => $result->publisher,
+              ) 
+          );
+  
+      }
+  
+  }
 
 }
  //        $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position
